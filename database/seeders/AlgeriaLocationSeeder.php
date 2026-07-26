@@ -22,36 +22,43 @@ class AlgeriaLocationSeeder extends Seeder
 
         \Illuminate\Support\Facades\DB::disableQueryLog();
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($communes) {
-            foreach (collect($communes)->groupBy('wilaya_code') as $wilayaCode => $wilayaCommunes) {
-                /** @var array<string, mixed> $firstCommune */
-                $firstCommune = $wilayaCommunes->first();
+        $wilayasData = [];
+        $communesData = [];
 
-                $wilaya = Wilaya::firstOrNew(['code' => (int) $wilayaCode]);
-                $wilaya->name = (string) $firstCommune['wilaya_name_fr'];
-                $wilaya->name_ar = (string) $firstCommune['wilaya_name_ar'];
+        // Prepare Wilayas data
+        foreach (collect($communes)->groupBy('wilaya_code') as $wilayaCode => $wilayaCommunes) {
+            $firstCommune = $wilayaCommunes->first();
+            $wilayasData[] = [
+                'code' => (int) $wilayaCode,
+                'name' => (string) $firstCommune['wilaya_name_fr'],
+                'name_ar' => (string) $firstCommune['wilaya_name_ar'],
+                'delivery_price' => $this->defaultDeliveryPrice((int) $wilayaCode),
+                'is_delivery_available' => true,
+            ];
+        }
 
-                if (! $wilaya->exists) {
-                    $wilaya->delivery_price = $this->defaultDeliveryPrice((int) $wilayaCode);
-                    $wilaya->is_delivery_available = true;
-                }
+        // Bulk upsert Wilayas
+        Wilaya::upsert($wilayasData, ['code'], ['name', 'name_ar']);
 
-                $wilaya->save();
+        // Fetch the inserted Wilayas to map their IDs
+        $wilayaMap = Wilaya::pluck('id', 'code');
 
-                foreach ($wilayaCommunes as $commune) {
-                    Commune::updateOrCreate(
-                        ['geoalgeria_id' => (int) $commune['id']],
-                        [
-                            'wilaya_id' => $wilaya->id,
-                            'name' => (string) $commune['commune_name_fr'],
-                            'name_ar' => (string) $commune['commune_name_ar'],
-                            'daira_name' => (string) $commune['daira_name_fr'],
-                            'postal_code' => (string) $commune['postal_code'],
-                        ],
-                    );
-                }
-            }
-        });
+        // Prepare Communes data
+        foreach ($communes as $commune) {
+            $communesData[] = [
+                'geoalgeria_id' => (int) $commune['id'],
+                'wilaya_id' => $wilayaMap[$commune['wilaya_code']],
+                'name' => (string) $commune['commune_name_fr'],
+                'name_ar' => (string) $commune['commune_name_ar'],
+                'daira_name' => (string) $commune['daira_name_fr'],
+                'postal_code' => (string) $commune['postal_code'],
+            ];
+        }
+
+        // Bulk upsert Communes in chunks to avoid query length limits
+        foreach (array_chunk($communesData, 500) as $chunk) {
+            Commune::upsert($chunk, ['geoalgeria_id'], ['wilaya_id', 'name', 'name_ar', 'daira_name', 'postal_code']);
+        }
     }
 
     private function defaultDeliveryPrice(int $wilayaCode): int

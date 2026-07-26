@@ -32,16 +32,26 @@ fi
 # Run package discovery (important since we skip scripts during build)
 php artisan package:discover --ansi
 
-# Setup the database and seed it on every boot
-echo "Setting up SQLite database..."
-touch database/database.sqlite
-php artisan migrate:fresh --force --seed || php artisan migrate --force
-
 # Cache configuration for production performance
 echo "Caching Laravel configuration..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "Starting Supervisor..."
-exec supervisord -c /etc/supervisord.conf
+# Start Supervisor (nginx + php-fpm) FIRST so Render detects the port
+echo "Starting Supervisor in the background..."
+supervisord -c /etc/supervisord.conf &
+SUPERVISOR_PID=$!
+
+# Give nginx a moment to bind the port
+sleep 3
+
+# NOW run migrations in the foreground (port is already open)
+echo "Running database migrations and seeding..."
+touch database/database.sqlite
+php artisan migrate:fresh --force --seed || php artisan migrate --force
+
+echo "Deployment complete! App is live."
+
+# Wait for supervisor to keep the container running
+wait $SUPERVISOR_PID

@@ -32,6 +32,9 @@ fi
 # Run package discovery (important since we skip scripts during build)
 php artisan package:discover --ansi
 
+# Create storage symlink for uploaded images
+php artisan storage:link || true
+
 # Cache configuration for production performance
 echo "Caching Laravel configuration..."
 php artisan config:cache

@@ -13,6 +13,22 @@ cd /var/www/html
 
 echo "Starting deployment setup..."
 
+# Ensure .env exists – copy from example if missing
+if [ ! -f .env ]; then
+    echo "No .env found, copying from .env.example..."
+    cp .env.example .env
+fi
+
+# Override critical settings for production
+sed -i 's/APP_ENV=local/APP_ENV=production/' .env
+sed -i 's/APP_DEBUG=true/APP_DEBUG=false/' .env
+
+# Generate APP_KEY if not set
+if ! grep -q 'APP_KEY=base64' .env; then
+    echo "Generating APP_KEY..."
+    php artisan key:generate --force
+fi
+
 # Run package discovery (important since we skip scripts during build)
 php artisan package:discover --ansi
 

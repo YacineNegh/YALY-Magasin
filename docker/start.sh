@@ -49,7 +49,7 @@ sleep 3
 # NOW run migrations in the foreground (port is already open)
 echo "Running database migrations and seeding..."
 touch database/database.sqlite
-php artisan migrate:fresh --force --seed || php artisan migrate --force
+php artisan migrate --force --seed
 
 echo "Deployment complete! App is live."
 

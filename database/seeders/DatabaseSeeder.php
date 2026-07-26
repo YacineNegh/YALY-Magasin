@@ -15,8 +15,8 @@ class DatabaseSeeder extends Seeder
         $this->call(AlgeriaLocationSeeder::class);
 
         Admin::firstOrCreate(
-            ['email' => 'lydcine@ylstore.com'],
-            ['name' => 'LydCine', 'password' => 'Meshmashiw@20023'],
+            ['email' => env('ADMIN_EMAIL', 'admin@ylstore.com')],
+            ['name' => 'Admin', 'password' => env('ADMIN_PASSWORD', 'ChangeMe123!')],
         );
 
         $categories = collect([

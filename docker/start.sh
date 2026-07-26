@@ -8,8 +8,8 @@ if [ -f /etc/nginx/http.d/default.conf.template ]; then
     envsubst '${PORT}' < /etc/nginx/http.d/default.conf.template > /etc/nginx/http.d/default.conf
 fi
 
-# The Dockerfile sets the working directory to /app (not /var/www/html)
-cd /app
+# The Dockerfile sets the working directory to /var/www/html
+cd /var/www/html
 
 echo "Starting deployment setup..."
 

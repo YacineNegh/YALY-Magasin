@@ -6,7 +6,7 @@
                     @if ($product->images->isNotEmpty())
                         <img x-bind:src="active" alt="{{ $product->name }}" class="aspect-square w-full object-cover">
                     @else
-                        <div class="grid aspect-square place-items-center bg-brand-blush/40 text-2xl font-black text-brand-sage">YALY.</div>
+                        <div class="grid aspect-square place-items-center bg-brand-blush/40 text-2xl font-black text-brand-sage">YΛLY.</div>
                     @endif
                 </div>
                 @if ($product->images->count() > 1)
@@ -72,7 +72,7 @@
                                     name="wilaya_id"
                                     x-model="wilayaId"
                                     x-on:change="communeId = ''; loadCommunes()"
-                                    class="rounded-lg border-brand-blush bg-white text-brand-ink shadow-sm focus:border-brand-sage focus:ring-brand-sage"
+                                    class="w-full rounded-lg border-gray-200 bg-white text-brand-ink shadow-sm focus:border-brand-sage focus:ring-brand-sage"
                                 >
                                     <option value="" x-text="loadingWilayas ? 'Loading wilayas...' : 'Choose wilaya'"></option>
                                     <template x-for="wilaya in wilayas" :key="wilaya.id">
@@ -90,7 +90,7 @@
                                     name="commune_id"
                                     x-model="communeId"
                                     x-bind:disabled="! wilayaId || loadingCommunes"
-                                    class="rounded-lg border-brand-blush bg-white text-brand-ink shadow-sm disabled:bg-brand-cream disabled:text-zinc-500 focus:border-brand-sage focus:ring-brand-sage"
+                                    class="w-full rounded-lg border-gray-200 bg-white text-brand-ink shadow-sm disabled:bg-gray-50 disabled:text-zinc-500 focus:border-brand-sage focus:ring-brand-sage"
                                 >
                                     <option value="" x-text="communePlaceholder"></option>
                                     <template x-for="commune in communes" :key="commune.id">

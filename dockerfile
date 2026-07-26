@@ -7,15 +7,13 @@ COPY . .
 RUN npm run build
 
 # ---- Stage 2: PHP app + nginx ----
-# Pinned to 8.4: your composer.lock (symfony/error-handler v8.1.0) requires PHP >=8.4.1,
-# and the 8.5-fpm-alpine tag wasn't resolving correctly during the build.
 FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
     nginx supervisor bash curl git unzip sqlite sqlite-dev \
     libpng-dev libzip-dev oniguruma-dev icu-dev gettext \
-    curl-dev libxml2-dev \
-    && docker-php-ext-install pdo pdo_sqlite mbstring bcmath gd zip pcntl exif intl curl xml dom simplexml xmlwriter soap
+    curl-dev libxml2-dev postgresql-dev \
+    && docker-php-ext-install pdo pdo_sqlite pdo_pgsql mbstring bcmath gd zip pcntl exif intl curl xml dom simplexml xmlwriter soap
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
